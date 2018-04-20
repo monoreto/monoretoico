@@ -1,0 +1,38 @@
+{
+  "name": "monoretoito",
+  "version": "2.0.0",
+  "description": "Monoreto ICO smart contracts",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://nkrivenko@bitbucket.org/nkrivenko/monoretoito.git"
+  },
+  "author": "Nikolai Krivenko",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/nkrivenko/monoretoito#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.17.0",
+    "babel-register": "^6.23.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.2",
+    "truffle": "^4.1.3",
+    "zeppelin-solidity": "^1.8.0"
+  },
+  "dependencies": {
+    "solgraph": "^0.2.6",
+    "web3": "^0.20.6"
+  }
+}
