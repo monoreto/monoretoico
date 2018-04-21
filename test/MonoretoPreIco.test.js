@@ -91,8 +91,10 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
 	const tokensOfInvestor = await this.token.balanceOf(investor);
 	const decimals = await this.token.decimals();
 
+	const decimalsInUsdMnr = 100000;
+
 	tokensOfInvestor.should.be.bignumber.equal(
-	    new BigNumber(USDETH.times(100000).div(USDMNR)).times(new BigNumber(10 ** decimals)).toFixed(0)
+	    new BigNumber(USDETH.times(decimalsInUsdMnr).div(USDMNR)).times(new BigNumber(10 ** decimals)).toFixed(0)
 	);
     });
 

@@ -12,6 +12,7 @@ contract MonoretoToken is CappedToken {
     uint8 public constant decimals = 18;
 
     uint8 private constant percentToAdjust = 6;
+    uint8 private constant oneHundredPercent = 100;
 
     function MonoretoToken(uint256 _cap) public
         CappedToken(_cap) {
@@ -22,7 +23,7 @@ contract MonoretoToken is CappedToken {
 
     function adjustCap() public onlyOwner {
 	require(!capAdjusted);
-	cap = totalSupply().mul(100).div(percentToAdjust);
+	cap = totalSupply().mul(oneHundredPercent).div(percentToAdjust);
 
 	capAdjusted = true;
     }

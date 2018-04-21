@@ -57,8 +57,10 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
 	require(bonusesSet);
     }
 
+    uint256 private oneHundredPercent = 100;
+
     function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-	return _weiAmount.mul(usdEth).mul(CENT_DECIMALS).mul(computeBonusValueInPercents()).div(100).div(usdMnr);
+	return _weiAmount.mul(usdEth).mul(CENT_DECIMALS).mul(computeBonusValueInPercents()).div(oneHundredPercent).div(usdMnr);
     }
 
     /**
@@ -73,6 +75,11 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
         return 100;
     }
 
+    /**
+     * @dev ICO finalization function.
+     * After the end of ICO token must not be minted again
+     * Tokens for project, team and bounty will be distributed
+     */
     function finalization() internal {
 	require(teamWallet != address(0));
 	require(bountyWallet != address(0));
@@ -82,9 +89,13 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
 	if (goalReached()) {
             uint256 tokenSupply = castToken.cap();
 
-            castToken.mint(wallet, tokenSupply.mul(23).div(100));
-            castToken.mint(teamWallet, tokenSupply.mul(11).div(100));
-            castToken.mint(bountyWallet, tokenSupply.mul(3).div(100));
+            uint256 projectTokenPercents = 23;
+	    uint256 teamTokenPercents = 11;
+	    uint256 bountyTokenPercents = 3;
+
+            castToken.mint(wallet, tokenSupply.mul(projectTokenPercents).div(oneHundredPercent));
+            castToken.mint(teamWallet, tokenSupply.mul(teamTokenPercents).div(oneHundredPercent));
+            castToken.mint(bountyWallet, tokenSupply.mul(bountyTokenPercents).div(oneHundredPercent));
 	}
 
 	castToken.finishMinting();
