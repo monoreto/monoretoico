@@ -1,5 +1,6 @@
-//var MonoretoCrowdsale = artifacts.require("./MonoretoCrowdsale.sol");
-// var MonoretoToken = artifacts.require("./MonoretoToken.sol");
+var MonoretoIco = artifacts.require("./MonoretoIco.sol");
+var MonoretoPreIco = artifacts.require("./MonoretoPreIco.sol");
+var MonoretoToken = artifacts.require("./MonoretoToken.sol");
 
 const duration = {
     seconds: function(val) { return val},
@@ -12,31 +13,26 @@ const duration = {
 
 module.exports = function(deployer, network, accounts) {
 
-	var startTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + duration.minutes(1);
-	var endTime = startTime + duration.minutes(5);
-	var rate = new web3.BigNumber(1e15);
-	var goal = new web3.BigNumber(web3.toWei("1", "finney"));
-	var cap = new web3.BigNumber(web3.toWei("10", "ether"));
-	var wallet = accounts[1];
+	const preIcoTokenCap = 5 * 10 ** 26;
+	const icoTokenCap = 5 * 10 ** 26;
 
-	if (network == "rinkeby") {
-		startTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + duration.minutes(1);
-	  	endTime = startTime + duration.minutes(5);
-	  	rate = new web3.BigNumber(1e15);
-	  	goal = new web3.BigNumber(web3.toWei("1", "finney"));
-	  	cap = new web3.BigNumber(web3.toWei("10", "ether"));
-	  	wallet = accounts[1];
- 	} else if (network == "live") {
- 		startTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + duration.minutes(1);
-		endTime = startTime + duration.days(30);
-		rate = new web3.BigNumber(1e15);
-		goal = new web3.BigNumber(web3.toWei("1", "finney"));
-		cap = new web3.BigNumber(web3.toWei("10", "ether"));
-		wallet = accounts[1];
- 	}
+	const preIcoStartTime = web3.eth.getBlock('latest').timestamp + duration.minutes(1);
+	const preIcoEndTime = preIcoStartTime + duration.days(30);
+	const preIcoGoal = new web3.BigNumber(web3.toWei("378", "ether"));
+	const preIcoCap = new web3.BigNumber(web3.toWei("1516", "ether"));
+	const usdeth = new web3.BigNumber(528);
+	const preIcoUsdmnr = new web3.BigNumber(2670);
+	const wallet = accounts[1];
 
-  	// deployer.deploy(MonoretoToken, { overwrite: false });
-  	/*deployer.deploy(MonoretoCrowdsale, startTime, endTime, rate, goal, cap, wallet).then(function(instance) {
-  		// instance.setBonusTimes();
-  	});*/
+	const icoStartTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + duration.minutes(1);
+	const icoEndTime = preIcoStartTime + duration.minutes(5);
+	const icoGoal = new web3.BigNumber(web3.toWei("3788", "ether"));
+	const icoCap = new web3.BigNumber(web3.toWei("28410", "ether"));
+	const icoUsdmnr = new web3.BigNumber(5263);
+
+  	deployer.deploy(MonoretoToken, preIcoTokenCap, { overwrite: false }).then(function(instance) {
+		deployer.deploy(MonoretoPreIco, preIcoStartTime, preIcoEndTime, preIcoGoal, preIcoCap, usdeth, preIcoUsdmnr, preIcoTokenCap, wallet, MonoretoToken.address);
+
+		deployer.deploy(MonoretoIco, icoStartTime, icoEndTime, icoGoal, icoCap, usdeth, icoUsdmnr, icoTokenCap, wallet, MonoretoToken.address);
+	});
 };
