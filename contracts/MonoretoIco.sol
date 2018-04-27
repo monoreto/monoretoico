@@ -71,18 +71,6 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
     }
 
     /**
-     * @dev computes the bonus percent corresponding the current time
-     * bonuses must be set, of course.
-     */
-    function computeBonusValueInPercents() private view returns(uint256) {
-        for (uint i = 0; i < bonusTimes.length; i++) {
-            if (now.sub(openingTime) <= bonusTimes[i]) return bonusTimesPercents[i];
-        }
-
-        return ONE_HUNDRED_PERCENT;
-    }
-
-    /**
      * @dev ICO finalization function.
      * After the end of ICO token must not be minted again
      * Tokens for project, team and bounty will be distributed
@@ -109,5 +97,18 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
 
         super.finalization();
     }
+
+    /**
+     * @dev computes the bonus percent corresponding the current time
+     * bonuses must be set, of course.
+     */
+    function computeBonusValueInPercents() private view returns(uint256) {
+        for (uint i = 0; i < bonusTimes.length; i++) {
+            if (now.sub(openingTime) <= bonusTimes[i]) return bonusTimesPercents[i];
+        }
+
+        return ONE_HUNDRED_PERCENT;
+    }
+
 }
 
