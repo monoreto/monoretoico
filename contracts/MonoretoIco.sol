@@ -27,24 +27,6 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
     uint256[] public bonusTimes;
     uint256[] public bonusTimesPercents;
 
-    function getBonusTimes() external view returns(uint256[]) {
-        return bonusTimes;
-    }
-
-    function getBonusTimesPercents() external view returns(uint256[]) {
-        return bonusTimesPercents;
-    }
-
-    function setAdditionalWallets(address _teamWallet, address _bountyWallet) public onlyOwner {
-        require(_teamWallet != address(0));
-        require(_bountyWallet != address(0));
-
-        teamWallet = _teamWallet;
-        bountyWallet = _bountyWallet;
-    }
-
-    bool private bonusesSet = false;
-
     function setBonusTimes(uint256[] times, uint256[] values) external onlyOwner onlyWhileOpen {
         require(times.length == values.length);
 
@@ -58,16 +40,34 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
         bonusesSet = true;
     }
 
+    function getBonusTimes() external view returns(uint256[]) {
+        return bonusTimes;
+    }
+
+    function getBonusTimesPercents() external view returns(uint256[]) {
+        return bonusTimesPercents;
+    }
+
+    bool private bonusesSet = false;
+
+    function setAdditionalWallets(address _teamWallet, address _bountyWallet) public onlyOwner {
+        require(_teamWallet != address(0));
+        require(_bountyWallet != address(0));
+
+        teamWallet = _teamWallet;
+        bountyWallet = _bountyWallet;
+    }
+
     function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
         require(bonusesSet);
         super._preValidatePurchase(_beneficiary, _weiAmount);
     }
 
-    uint256 private ONE_HUNDRED_PERCENT = 100;
+    uint256 private constant ONE_HUNDRED_PERCENT = 100;
 
     function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
         return _weiAmount.mul(usdEth).mul(CENT_DECIMALS)
-	    .mul(computeBonusValueInPercents()).div(ONE_HUNDRED_PERCENT).div(usdMnr);
+            .mul(computeBonusValueInPercents()).div(ONE_HUNDRED_PERCENT).div(usdMnr);
     }
 
     /**

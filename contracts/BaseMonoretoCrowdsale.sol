@@ -42,8 +42,8 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
         deployer = msg.sender;
     }
 
-    event UsdEthRateChanged(address indexed changerAddress, uint256 UsdEthRate);
-    event UsdMnrRateChanged(address indexed changerAddress, uint256 UsdMnrRate);
+    event UsdEthRateChanged(address indexed changerAddress, uint256 usdEthRate);
+    event UsdMnrRateChanged(address indexed changerAddress, uint256 usdMnrRate);
 
     function setUsdEth(uint256 _usdEth) external onlyOwner {
         usdEth = _usdEth;
