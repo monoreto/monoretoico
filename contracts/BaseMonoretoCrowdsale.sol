@@ -67,7 +67,9 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
     uint256 public constant ETHER_THRESHOLD = 100 finney;
 
     function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
-        require(tokensPurchased.add(_getTokenAmount(_weiAmount)) <= tokenTarget);
+        uint256 newTokenAmount = tokensPurchased.add(_getTokenAmount(_weiAmount));
+
+        require(newTokenAmount <= tokenTarget);
         require(_weiAmount >= ETHER_THRESHOLD);
         super._preValidatePurchase(_beneficiary, _weiAmount);
     }

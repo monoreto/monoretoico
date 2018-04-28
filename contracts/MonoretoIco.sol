@@ -19,19 +19,26 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
         RefundableCrowdsale(_goal)
         FinalizableCrowdsale()
         TimedCrowdsale(_openTime, _closeTime)
-        Crowdsale(1, _ownerWallet, _token) {
+        Crowdsale(1, _ownerWallet, _token)
+    {
         require(_goal <= _cap);
         rate = _usdEth.mul(CENT_DECIMALS).div(_usdMnr);
+
+	MonoretoToken castToken = MonoretoToken(token);
+	tokenCap = castToken.cap();
     }
 
     uint256[] public bonusTimes;
     uint256[] public bonusTimesPercents;
 
+    uint256 public tokenCap;
+
     function setBonusTimes(uint256[] times, uint256[] values) external onlyOwner onlyWhileOpen {
         require(times.length == values.length);
 
         for (uint256 i = 1; i < times.length; i++) {
-            require(times[i.sub(1)] < times[i]);
+            uint256 prevI = i.sub(1);
+            require(times[prevI] < times[i]);
         }
 
         bonusTimes = times;
@@ -82,15 +89,15 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
             require(teamWallet != address(0));
             require(bountyWallet != address(0));
 
-            uint256 tokenSupply = castToken.cap();
+//            uint256 tokenSupply = castToken.cap();
 
             uint256 projectTokenPercents = 23;
             uint256 teamTokenPercents = 11;
             uint256 bountyTokenPercents = 3;
 
-            castToken.mint(wallet, tokenSupply.mul(projectTokenPercents).div(ONE_HUNDRED_PERCENT));
-            castToken.mint(teamWallet, tokenSupply.mul(teamTokenPercents).div(ONE_HUNDRED_PERCENT));
-            castToken.mint(bountyWallet, tokenSupply.mul(bountyTokenPercents).div(ONE_HUNDRED_PERCENT));
+            castToken.mint(wallet, tokenCap.mul(projectTokenPercents).div(ONE_HUNDRED_PERCENT));
+            castToken.mint(teamWallet, tokenCap.mul(teamTokenPercents).div(ONE_HUNDRED_PERCENT));
+            castToken.mint(bountyWallet, tokenCap.mul(bountyTokenPercents).div(ONE_HUNDRED_PERCENT));
         }
 
         castToken.finishMinting();
