@@ -92,7 +92,7 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         await this.preIco.sendTransaction({ from: investor, value: web3.toWei("1", "ether") }).should.be.fulfilled;
 
         const tokensOfInvestor = await this.token.balanceOf(investor);
-        const decimals = await this.token.decimals();
+        const decimals = await this.token.DECIMALS();
 
         const decimalsInUsdMnr = 100000;
 
