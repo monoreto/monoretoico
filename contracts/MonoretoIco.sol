@@ -30,8 +30,8 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
     function setBonusTimes(uint256[] times, uint256[] values) external onlyOwner onlyWhileOpen {
         require(times.length == values.length);
 
-        for (uint256 i = 0; i < times.length.sub(1); i++) {
-            require(times[i] < times[i + 1]);
+        for (uint256 i = 1; i < times.length; i++) {
+            require(times[i.sub(1)] < times[i]);
         }
 
         bonusTimes = times;
@@ -76,12 +76,12 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
      * Tokens for project, team and bounty will be distributed
      */
     function finalization() internal {
-        require(teamWallet != address(0));
-        require(bountyWallet != address(0));
-
         MonoretoToken castToken = MonoretoToken(token);
 
         if (goalReached()) {
+            require(teamWallet != address(0));
+            require(bountyWallet != address(0));
+
             uint256 tokenSupply = castToken.cap();
 
             uint256 projectTokenPercents = 23;

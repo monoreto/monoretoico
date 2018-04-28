@@ -29,7 +29,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
 
     before(async function() {
         await advanceBlock();
-	BigNumber.config({ DECIMAL_PLACES: 18 });
+        BigNumber.config({ DECIMAL_PLACES: 18 });
     });
 
     beforeEach(async function () {
@@ -61,7 +61,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
 
 
         this.token = MonoretoToken.at(await this.crowdsale.token());
-	this.token.transferOwnership(this.crowdsale.address);
+        this.token.transferOwnership(this.crowdsale.address);
     });
 
     it("should create crowdsale with correct parameters", async function () {
@@ -102,7 +102,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
     });
 
     it("should not allow to send ether before crowdsale beginning and after crowdsale end", async function() {
-	await increaseTimeTo(this.startTime);
+        await increaseTimeTo(this.startTime);
         await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
 
         this.crowdsale.sendTransaction({ from: investor, value: SINGLE_ETHER }).should.be.rejectedWith(EVMRevert);
@@ -111,7 +111,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
     });
 
     it("should allow to call the finalize function after crowdsale end", async function() {
-	this.crowdsale.setAdditionalWallets(team, bounty);
+        this.crowdsale.setAdditionalWallets(team, bounty);
         await increaseTimeTo(this.afterEndTime);
 
         (await this.crowdsale.hasClosed()).should.be.true;
@@ -121,7 +121,8 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
 
     it("should set bonuses only from owner", async function() {
         await increaseTimeTo(this.startTime);
-        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor }).should.be.rejectedWith(EVMRevert);
+        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
+            .should.be.rejectedWith(EVMRevert);
     });
 
     it("should refund if goal is not reached", async function() {
@@ -134,9 +135,10 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         let balanceBeforeRefund = await web3.eth.getBalance(investor.toString());
 
         await increaseTimeTo(this.afterEndTime);
-	const isGoalReached = await this.crowdsale.goalReached();
+        const isGoalReached = await this.crowdsale.goalReached();
         isGoalReached.should.be.false;
-	this.crowdsale.setAdditionalWallets(team, bounty);
+
+        this.crowdsale.setAdditionalWallets(team, bounty);
 
         await this.crowdsale.finalize();
         await this.crowdsale.claimRefund({ from: investor, gasPrice: 0 });
@@ -144,6 +146,17 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         let balanceAfterRefund = await web3.eth.getBalance(investor);
 
         balanceAfterRefund.minus(balanceBeforeRefund).should.be.bignumber.equal(SINGLE_ETHER);
+    });
+
+    it("should set empty bonuses (which means no bonuses)", async function() {
+        await increaseTimeTo(this.startTime);
+
+        await this.crowdsale.setBonusTimes([],  [], { from: owner }).should.be.fulfilled;
+
+        await this.crowdsale.sendTransaction({ from: investor, value: SINGLE_ETHER });
+
+        var expectedNumberOfTokens = SINGLE_ETHER.times(USDETH).times(100000).div(USDMNR).toFixed(0);
+        expectedNumberOfTokens.should.be.bignumber.equal(await this.token.balanceOf(investor));
     });
 
     it("should not refund if goal is reached", async function() {
@@ -154,7 +167,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await this.crowdsale.send(SOFTCAP, { from: investor });
 
         await increaseTimeTo(this.afterEndTime);
-	this.crowdsale.setAdditionalWallets(team, bounty);
+        this.crowdsale.setAdditionalWallets(team, bounty);
         (await this.crowdsale.goalReached()).should.be.true;
 
         this.crowdsale.claimRefund({ from: investor }).should.be.rejectedWith(EVMRevert);
@@ -164,7 +177,8 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await increaseTimeTo(this.startTime);
         await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
 
-        await this.crowdsale.sendTransaction({ from: investor, value: new BigNumber(web3.toWei(99, 'finney')) }).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.sendTransaction({ from: investor, value: new BigNumber(web3.toWei(99, 'finney')) })
+            .should.be.rejectedWith(EVMRevert);
     });
 
     it("should set bonus times and values in percents", async function() {
@@ -205,10 +219,10 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
             var tokenBalanceOfInvestor = await this.token.balanceOf(investor);
 
             var balance = tokenBalanceOfInvestor.minus(oldBalance);
-            var currentBonusPercents = this.bonusTimesPercents[i] || new BigNumber('100');
+            var currentBonusPercents = this.bonusTimesPercents[i] || ONE_HUNDRED_PERCENT;
             
-	    var expectedNumberOfTokens = SINGLE_ETHER.times(USDETH).times(100000)
-			.times(currentBonusPercents).div(ONE_HUNDRED_PERCENT).div(USDMNR).toFixed(0);
+            var expectedNumberOfTokens = SINGLE_ETHER.times(USDETH).times(100000)
+                .times(currentBonusPercents).div(ONE_HUNDRED_PERCENT).div(USDMNR).toFixed(0);
 
             balance.should.be.bignumber.equal(expectedNumberOfTokens);
         }
@@ -217,12 +231,12 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
     it('should finish crowdsale as soon as hardcap is collected', async function() {
         await increaseTimeTo(this.startTime);
         await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
-	this.crowdsale.setAdditionalWallets(team, bounty);
+        this.crowdsale.setAdditionalWallets(team, bounty);
 
         await this.crowdsale.sendTransaction({ from: investor, value: HARDCAP });
         (await this.crowdsale.capReached()).should.be.true;
 
-	await this.crowdsale.finalize({ from: owner }).should.be.fulfilled;
+        await this.crowdsale.finalize({ from: owner }).should.be.fulfilled;
     });
 
     it("should not refund if crowdsale is in progress", async function() {
@@ -239,34 +253,45 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         this.crowdsale.sendTransaction({ from: investor, value: SINGLE_ETHER }).should.be.rejectedWith(EVMRevert);
     });
 
-    it("should not allow to finalize unless team and bounty wallets are set", async function() {
-	await increaseTimeTo(this.afterEndTime);
+    it("should not allow to finalize if softcap is collected and team and bounty wallets not set", async function() {
+        await increaseTimeTo(this.startTime);
+        await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
 
-	this.crowdsale.finalize({ from: owner }).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.sendTransaction({ from: investor, value: SOFTCAP }).should.be.fulfilled;
+
+        await increaseTimeTo(this.afterEndTime);
+
+        this.crowdsale.finalize({ from: owner }).should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should allow to finalize if softcap is not collected and team and bounty wallets not set", async function() {
+        await increaseTimeTo(this.afterEndTime);
+
+        this.crowdsale.finalize({ from: owner }).should.be.fulfilled;
     });
 
     it('should mint 23% tokens for project needs, 11% for team and 3% for bounty after the end of crowdsale', async function() {
         await increaseTimeTo(this.startTime);
         await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
 
-	this.crowdsale.setAdditionalWallets(team, bounty);
+        this.crowdsale.setAdditionalWallets(team, bounty);
         // Crowdsale is required to be ended and goal has to be reached
         await this.crowdsale.sendTransaction({ from: investor, value: SOFTCAP }).should.be.fulfilled;
         await increaseTimeTo(this.afterEndTime);
 
         await this.crowdsale.finalize({ from: owner }).should.be.fulfilled;
 
-	const RATE = USDETH.times(100000).div(USDMNR);
+        const RATE = USDETH.times(100000).div(USDMNR);
         const TWENTY_THREE_PCT_MULT = new BigNumber(23).div(ONE_HUNDRED_PERCENT);
         const ELEVEN_PCT_MULT = new BigNumber(11).div(ONE_HUNDRED_PERCENT);
         const THREE_PCT_MULT = new BigNumber(3).div(ONE_HUNDRED_PERCENT);
         const BONUS_PCT = this.bonusTimesPercents[0].div(ONE_HUNDRED_PERCENT);
 
-	const tokenCap = await this.token.cap();
+         const TOKEN_CAP = await this.token.cap();
 
-        let expectedProjectTokens = tokenCap.times(TWENTY_THREE_PCT_MULT);
-        let expectedTeamTokens = tokenCap.times(ELEVEN_PCT_MULT);
-	let expectedBountyTokens = tokenCap.times(THREE_PCT_MULT);
+        let expectedProjectTokens = TOKEN_CAP.times(TWENTY_THREE_PCT_MULT);
+        let expectedTeamTokens = TOKEN_CAP.times(ELEVEN_PCT_MULT);
+        let expectedBountyTokens = TOKEN_CAP.times(THREE_PCT_MULT);
 
         expectedProjectTokens.should.be.bignumber.equal(await this.token.balanceOf(wallet));
         expectedTeamTokens.should.be.bignumber.equal(await this.token.balanceOf(team));
@@ -275,7 +300,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         (await this.token.mintingFinished()).should.be.true;
         owner.should.be.equal(await this.token.owner());
 
-	await this.token.mint(owner, 1, { from: owner }).should.be.rejectedWith(EVMRevert);
+        await this.token.mint(owner, 1, { from: owner }).should.be.rejectedWith(EVMRevert);
     });
 
 });
