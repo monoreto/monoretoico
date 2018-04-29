@@ -7,6 +7,8 @@ import EVMRevert from './helpers/EVMRevert';
 const MonoretoCrowdsale = artifacts.require('MonoretoIco');
 const MonoretoToken = artifacts.require('MonoretoToken');
 
+const ReentrancyAttacker = artifacts.require("ReentrancyAttacker");
+
 require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bignumber')(BigNumber))
@@ -303,5 +305,17 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await this.token.mint(owner, 1, { from: owner }).should.be.rejectedWith(EVMRevert);
     });
 
+    it("should allow to claim refund only once to one investor", async function() {
+        increaseTimeTo(this.openTime);
+
+        var attacker = await ReentrancyAttacker.new(this.crowdsale.address);
+
+        var valueLessThanSoftcap = SOFTCAP.div(2);
+	await attacker.putEther({ value: valueLessThanSoftcap, from: owner });
+	await attacker.putEther({ value: valueLessThanSoftcap.div(2), from: investor });
+
+	increaseTimeTo(this.afterCloseTime);
+	await attacker.attack().should.be.rejectedWith(EVMRevert);
+    });
 });
 
