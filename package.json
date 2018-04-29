@@ -28,8 +28,8 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
-    "truffle": "^4.1.3",
-    "zeppelin-solidity": "^1.8.0"
+    "truffle": "^4.1.7",
+    "zeppelin-solidity": "^1.9.0"
   },
   "dependencies": {
     "solgraph": "^0.2.6",

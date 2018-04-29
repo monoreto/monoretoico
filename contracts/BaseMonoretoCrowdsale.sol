@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
@@ -42,20 +42,13 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
         deployer = msg.sender;
     }
 
-    event UsdEthRateChanged(address indexed changerAddress, uint256 usdEthRate);
-    event UsdMnrRateChanged(address indexed changerAddress, uint256 usdMnrRate);
-
     function setUsdEth(uint256 _usdEth) external onlyOwner {
         usdEth = _usdEth;
-        UsdEthRateChanged(msg.sender, _usdEth);
-
         rate = _usdEth.mul(CENT_DECIMALS).div(usdMnr);
     }
 
     function setUsdMnr(uint256 _usdMnr) external onlyOwner {
         usdMnr = _usdMnr;
-        UsdMnrRateChanged(msg.sender, _usdMnr);
-
         rate = usdEth.mul(CENT_DECIMALS).div(_usdMnr);
     }
 

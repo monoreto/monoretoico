@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "./BaseMonoretoCrowdsale.sol";
 
@@ -6,8 +6,8 @@ import "./BaseMonoretoCrowdsale.sol";
 contract MonoretoPreIco is BaseMonoretoCrowdsale {
 
     function MonoretoPreIco(uint256 _openTime, uint256 _closeTime, uint256 _goal, uint256 _cap,
-    uint256 _centWeiRate, uint256 _centMnrRate, 
-    uint256 _tokenTarget, address _ownerWallet, MonoretoToken _token) public
+        uint256 _centWeiRate, uint256 _centMnrRate, 
+        uint256 _tokenTarget, address _ownerWallet, MonoretoToken _token) public
         BaseMonoretoCrowdsale(_tokenTarget, _centWeiRate, _centMnrRate)
         CappedCrowdsale(_cap)
         RefundableCrowdsale(_goal)

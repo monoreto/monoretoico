@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "zeppelin-solidity/contracts/token/ERC20/CappedToken.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
@@ -11,9 +11,9 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract MonoretoToken is CappedToken {
     using SafeMath for uint256;
 
-    string public constant name = "Monoreto Token";
-    string public constant symbol = "MNR";
-    uint8 public constant decimals = 18;
+    string public constant NAME = "Monoreto Token";
+    string public constant SYMBOL = "MNR";
+    uint8 public constant DECIMALS = 18;
 
     function MonoretoToken(uint256 _cap) public
         CappedToken(_cap) {
