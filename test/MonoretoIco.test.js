@@ -158,7 +158,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await increaseTimeTo(this.startTime);
         this.bonusTimes.push(this.bonusTimes[4] + 1);
 
-        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
+        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: owner })
             .should.be.rejectedWith(EVMRevert);
     });
 
@@ -166,7 +166,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await increaseTimeTo(this.startTime);
         this.bonusTimes.reverse();
 
-        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
+        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: owner })
             .should.be.rejectedWith(EVMRevert);
     });
 
