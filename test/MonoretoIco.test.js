@@ -20,12 +20,13 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
 
     const USDETH = new BigNumber(528);
     const USDMNR = new BigNumber(5263);
-    const SOFTCAP = ether(3788);
-    const HARDCAP = ether(28410);
+    const SOFTCAP = new BigNumber(web3.toWei(3788, "ether"));
+    const HARDCAP = new BigNumber(web3.toWei(28410, "ether"));
     const ONE_HUNDRED_PERCENT = new BigNumber(100);
 
+    const USD_SIGNIFICANT_DIGITS_POW = 100000;
     const TOKEN_CAP = new BigNumber(5 * (10 ** 26));
-    const TOKEN_TARGET = new BigNumber(TOKEN_CAP.times(57).div(100).toFixed(0));
+    const TOKEN_TARGET = HARDCAP.times(USDETH).times(USD_SIGNIFICANT_DIGITS_POW).div(USDMNR).toFixed(0);
 
     const SINGLE_ETHER = new BigNumber(web3.toWei(1, "ether"));
 
@@ -116,6 +117,20 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         ).should.be.rejectedWith(EVMRevert);
     });
 
+    it("should not allow to buy tokens more than a token target", async function() {
+        await increaseTimeTo(this.startTime + this.bonusTimes[3] + duration.days(1));
+
+        await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
+        var hardcapHalf = HARDCAP.div(2);
+
+        await this.crowdsale.sendTransaction({ from: investor, value: hardcapHalf, gasPrice: 0 });
+
+	await this.crowdsale.setUsdEth(USDETH.mul(2));
+
+        await this.crowdsale.sendTransaction({ from: investor, value: hardcapHalf, gasPrice: 0 })
+            .should.be.rejectedWith(EVMRevert);
+    });
+
     it("should not create crowdsale if initial USDMNR rate is equal to zero", async function() {
         await MonoretoCrowdsale.new(
             this.startTime, this.endTime,
@@ -156,7 +171,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
 
     it("should not set bonuses if length of time array and value array differ", async function() {
         await increaseTimeTo(this.startTime);
-        this.bonusTimes.push(this.bonusTimes[4] + 1);
+        this.bonusTimes.push(this.bonusTimes[3] + 1);
 
         this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: owner })
             .should.be.rejectedWith(EVMRevert);
@@ -286,11 +301,11 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
     });
 
     it('should finish crowdsale as soon as hardcap is collected', async function() {
-        await increaseTimeTo(this.startTime);
+        await increaseTimeTo(this.startTime + this.bonusTimes[3] + duration.hours(1));
         await this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents);
         this.crowdsale.setAdditionalWallets(team, bounty);
 
-        await this.crowdsale.sendTransaction({ from: investor, value: HARDCAP });
+        await this.crowdsale.sendTransaction({ from: investor, value: HARDCAP }).should.be.fulfilled;
         (await this.crowdsale.capReached()).should.be.true;
 
         await this.crowdsale.finalize({ from: owner }).should.be.fulfilled;
