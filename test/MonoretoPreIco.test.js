@@ -64,6 +64,13 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
 	ownerWallet.should.be.equal(wallet);
     });
 
+    it("should not create pre-ico if hardcap is less than softcap", async function() {
+        await MonoretoPreIco.new(
+            this.openTime, this.closeTime, CAP, GOAL, 
+            USDETH, USDMNR, TOKEN_TARGET, wallet, this.token.address
+        ).should.be.rejectedWith(EVMRevert);
+    });
+
     it("should adjust the rate with respect to the new USDETH rate", async function() {
 	const oldUsdEthRate = await this.preIco.usdEth();
 	const oldRate = await this.preIco.rate();

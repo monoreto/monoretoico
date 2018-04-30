@@ -98,6 +98,33 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         ).should.be.rejectedWith(EVMRevert);
     });
 
+    it("should not create crowdsale if tokenTarget is equal to zero", async function() {
+        await MonoretoCrowdsale.new(
+            this.startTime, this.endTime,
+            USDETH, USDMNR, 
+            HARDCAP, SOFTCAP,
+            0, wallet, this.token.address
+        ).should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not create crowdsale if initial USDETH rate is equal to zero", async function() {
+        await MonoretoCrowdsale.new(
+            this.startTime, this.endTime,
+            0, USDMNR, 
+            HARDCAP, SOFTCAP,
+            TOKEN_TARGET, wallet, this.token.address
+        ).should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not create crowdsale if initial USDMNR rate is equal to zero", async function() {
+        await MonoretoCrowdsale.new(
+            this.startTime, this.endTime,
+            USDETH, 0, 
+            HARDCAP, SOFTCAP,
+            TOKEN_TARGET, wallet, this.token.address
+        ).should.be.rejectedWith(EVMRevert);
+    });
+
     it("should not allow to call finalize before crowdsale end", async function() {
         await increaseTimeTo(this.startTime);
         await this.crowdsale.finalize().should.be.rejectedWith(EVMRevert);
@@ -125,6 +152,34 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         await increaseTimeTo(this.startTime);
         this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
             .should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not set bonuses if length of time array and value array differ", async function() {
+        await increaseTimeTo(this.startTime);
+        this.bonusTimes.push(this.bonusTimes[4] + 1);
+
+        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
+            .should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not set bonuses if time array is not sorted", async function() {
+        await increaseTimeTo(this.startTime);
+        this.bonusTimes.reverse();
+
+        this.crowdsale.setBonusTimes(this.bonusTimes, this.bonusTimesPercents, { from: investor })
+            .should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not allow to set zero project wallet", async function() {
+        await increaseTimeTo(this.startTime);
+
+        this.crowdsale.setAdditionalWallets(0, bounty).should.be.rejectedWith(EVMRevert);
+    });
+
+    it("should not allow to set zero project wallet", async function() {
+        await increaseTimeTo(this.startTime);
+
+        this.crowdsale.setAdditionalWallets(project, 0).should.be.rejectedWith(EVMRevert);
     });
 
     it("should refund if goal is not reached", async function() {
@@ -289,7 +344,7 @@ contract('MonoretoIco', function ([owner, wallet, investor, team, project, bount
         const THREE_PCT_MULT = new BigNumber(3).div(ONE_HUNDRED_PERCENT);
         const BONUS_PCT = this.bonusTimesPercents[0].div(ONE_HUNDRED_PERCENT);
 
-         const TOKEN_CAP = await this.token.cap();
+        const TOKEN_CAP = await this.token.cap();
 
         let expectedProjectTokens = TOKEN_CAP.times(TWENTY_THREE_PCT_MULT);
         let expectedTeamTokens = TOKEN_CAP.times(ELEVEN_PCT_MULT);
