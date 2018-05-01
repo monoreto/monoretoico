@@ -7,6 +7,8 @@ import EVMRevert from "./helpers/EVMRevert";
 const MonoretoToken = artifacts.require("MonoretoToken");
 const MonoretoPreIco = artifacts.require("MonoretoPreIco");
 
+const ReentrancyAttacker = artifacts.require("ReentrancyAttacker");
+
 const BigNumber = web3.BigNumber;
 
 require('chai')
@@ -65,6 +67,13 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         ownerWallet.should.be.equal(wallet);
     });
 
+    it("should not create pre-ico if hardcap is less than softcap", async function() {
+        await MonoretoPreIco.new(
+            this.openTime, this.closeTime, CAP, GOAL, 
+            USDETH, USDMNR, TOKEN_TARGET, wallet, this.token.address
+        ).should.be.rejectedWith(EVMRevert);
+    });
+
     it("should adjust the rate with respect to the new USDETH rate", async function() {
         const oldUsdEthRate = await this.preIco.usdEth();
         const oldRate = await this.preIco.rate();
@@ -91,8 +100,8 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         await increaseTimeTo(this.openTime);
         await this.preIco.sendTransaction({ from: investor, value: web3.toWei("1", "ether") }).should.be.fulfilled;
 
-        const tokensOfInvestor = await this.token.balanceOf(investor);
-        const decimals = await this.token.DECIMALS();
+	const tokensOfInvestor = await this.token.balanceOf(investor);
+	const decimals = await this.token.DECIMALS();
 
         const decimalsInUsdMnr = 100000;
 
@@ -160,6 +169,19 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         await this.preIco.finalize({ from: owner }).should.be.fulfilled;
 
         owner.should.be.equal(await this.token.owner());
+    });
+
+    it("should allow to claim refund only once to one investor", async function() {
+        increaseTimeTo(this.openTime);
+
+        var attacker = await ReentrancyAttacker.new(this.preIco.address);
+
+        var valueLessThanSoftcap = GOAL.div(2);
+	await attacker.putEther({ value: valueLessThanSoftcap, from: owner });
+	await attacker.putEther({ value: valueLessThanSoftcap.div(2), from: investor });
+
+	increaseTimeTo(this.afterCloseTime);
+	await attacker.attack().should.be.rejectedWith(EVMRevert);
     });
 });
 

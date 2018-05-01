@@ -9,7 +9,12 @@ module.exports = {
       host: "127.0.0.1",
       port: 8545,
       network_id: "*"// , // Match any network id
-      // gas: 6000000
+    },
+    coverage: {
+      host: "127.0.0.1",
+      port: 8555,
+      network_id: "*", // Match any network id
+      gasPrice: 0x01,
     },
     rinkeby: {
       host: "127.0.0.1",

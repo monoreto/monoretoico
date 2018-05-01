@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.23;
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BaseMonoretoCrowdsale.sol";
@@ -86,8 +86,7 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
         MonoretoToken castToken = MonoretoToken(token);
 
         if (goalReached()) {
-            require(teamWallet != address(0));
-            require(bountyWallet != address(0));
+            require(teamWallet != address(0) && bountyWallet != address(0));
 
 //            uint256 tokenSupply = castToken.cap();
 
