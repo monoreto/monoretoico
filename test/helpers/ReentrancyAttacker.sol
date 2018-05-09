@@ -7,7 +7,7 @@ import "../../contracts/BaseMonoretoCrowdsale.sol";
 contract ReentrancyAttacker {
     BaseMonoretoCrowdsale public underTest;
 
-    function IcoAttacker(BaseMonoretoCrowdsale _underTest) {
+    function ReentrancyAttacker(BaseMonoretoCrowdsale _underTest) public {
         underTest = _underTest;
     }
 
