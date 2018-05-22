@@ -3,7 +3,12 @@
 The project uses:
 1. Ethereum blockchain as a base of infrastructure
 2. Truffle 4.1.3 for testing
-3. OpenZeppelin v1.7.0 contracts as a base of source code
+3. OpenZeppelin v1.9.0 contracts as a base of source code
+
+### Token summary
+1. Current token address: `0x5f824733d130ad85ec5e180368559cc89d14933d`
+2. Token symbol: MNR
+3. Token decimals: 18
 
 ### Project summary
 The project consists of ERC20 app token and crowdsale smart contracts for Pre-ICO and ICO.
