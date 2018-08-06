@@ -31,8 +31,8 @@ module.exports = function(deployer, network, accounts) {
 	const icoUsdmnr = new web3.BigNumber(5263);
 
   	deployer.deploy(MonoretoToken, preIcoTokenCap, { overwrite: false }).then(function(instance) {
-		deployer.deploy(MonoretoPreIco, preIcoStartTime, preIcoEndTime, preIcoGoal, preIcoCap, usdeth, preIcoUsdmnr, preIcoTokenCap, wallet, MonoretoToken.address);
+		deployer.deploy(MonoretoPreIco, preIcoStartTime, preIcoEndTime, preIcoGoal, preIcoCap, usdeth, preIcoUsdmnr, new web3.BigNumber(1), preIcoTokenCap, wallet, MonoretoToken.address);
 
-		deployer.deploy(MonoretoIco, icoStartTime, icoEndTime, icoGoal, icoCap, usdeth, icoUsdmnr, icoTokenCap, wallet, MonoretoToken.address);
+		deployer.deploy(MonoretoIco, icoStartTime, icoEndTime, icoGoal, icoCap, usdeth, icoUsdmnr, icoTokenCap, new web3.BigNumber(1), wallet, MonoretoToken.address);
 	});
 };

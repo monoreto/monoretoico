@@ -12,7 +12,7 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
     address public teamWallet;
 
     function MonoretoIco(uint256 _openTime, uint256 _closeTime, uint256 _usdEth,
-        uint256 _usdMnr, uint256 _goal, uint256 _cap, uint256 _tokensTarget,
+        uint256 _usdMnr, uint256 _initialRate, uint256 _goal, uint256 _cap, uint256 _tokensTarget,
         address _ownerWallet, MonoretoToken _token) public
         BaseMonoretoCrowdsale(_tokensTarget, _usdEth, _usdMnr)
         CappedCrowdsale(_cap)
@@ -22,10 +22,10 @@ contract MonoretoIco is BaseMonoretoCrowdsale {
         Crowdsale(1, _ownerWallet, _token)
     {
         require(_goal <= _cap);
-        rate = _usdEth.mul(CENT_DECIMALS).div(_usdMnr);
+        rate = _initialRate; // _usdEth.mul(CENT_DECIMALS).div(_usdMnr);
 
-	MonoretoToken castToken = MonoretoToken(token);
-	tokenCap = castToken.cap();
+        MonoretoToken castToken = MonoretoToken(token);
+        tokenCap = castToken.cap();
     }
 
     uint256[] public bonusTimes;

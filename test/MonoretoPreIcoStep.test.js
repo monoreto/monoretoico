@@ -5,9 +5,9 @@ import ether from "./helpers/ether";
 import EVMRevert from "./helpers/EVMRevert";
 
 const MonoretoToken = artifacts.require("MonoretoToken");
-const MonoretoPreIco = artifacts.require("MonoretoPreIco");
+const MonoretoPreIco = artifacts.require("MonoretoPreIcoStep");
 
-const ReentrancyAttacker = artifacts.require("ReentrancyAttacker");
+// const ReentrancyAttacker = artifacts.require("ReentrancyAttacker");
 
 const BigNumber = web3.BigNumber;
 
@@ -16,19 +16,20 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
+contract("MonoretoPreIcoStep", async function([ owner, wallet, investor ]) {
 
     const TOKEN_CAP = new BigNumber(5 * (10 ** 26));
     const TOKEN_TARGET = new BigNumber(TOKEN_CAP.times(6).div(100).toFixed(0));
 
-    const GOAL = ether(378);
-    const CAP = ether(1516);
+    const GOAL = new BigNumber(web3.toWei(534, "ether"));
+    const CAP = new BigNumber(web3.toWei(2137, "ether"));
 
-    const USDETH = new BigNumber(528);
-    const USDMNR = new BigNumber(2670);
+    const USDETH = new BigNumber(468);
 
     before(async function() {
         await advanceBlock();
+        await BigNumber.config({ DECIMAL_PLACES: 18 });
+        this.USDMNR = new BigNumber("3e18");
     });
 
     beforeEach(async function() {
@@ -40,7 +41,7 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
 
         this.preIco = await MonoretoPreIco.new(
             this.openTime, this.closeTime, GOAL, CAP, USDETH, 
-	    USDMNR, TOKEN_TARGET, wallet, this.token.address
+	    this.USDMNR, TOKEN_TARGET, new BigNumber(28725), wallet, this.token.address
 	);
 
         this.token = MonoretoToken.at(await this.preIco.token());
@@ -70,25 +71,29 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
     it("should not create pre-ico if hardcap is less than softcap", async function() {
         await MonoretoPreIco.new(
             this.openTime, this.closeTime, CAP, GOAL, 
-            USDETH, USDMNR, TOKEN_TARGET, wallet, this.token.address
+            USDETH, this.USDMNR, TOKEN_TARGET, 1, wallet, this.token.address
         ).should.be.rejectedWith(EVMRevert);
     });
 
     it("should adjust the rate with respect to the new USDETH rate", async function() {
-        const oldUsdEthRate = await this.preIco.usdEth();
-        const oldRate = await this.preIco.rate();
+        var oldUsdEthRate = await this.preIco.usdEth();
 
+        this.preIco.setUsdEth(oldUsdEthRate.times(2), { from: owner }).should.be.fulfilled;
+        oldUsdEthRate = await this.preIco.usdEth();
+        const oldRate = await this.preIco.rate();
         this.preIco.setUsdEth(oldUsdEthRate.times(2), { from: owner }).should.be.fulfilled;
 
         const newRate = await this.preIco.rate();
 
-        newRate.should.be.bignumber.equal(oldRate.times(2));
+        newRate.should.be.bignumber.equal(oldRate.times(2).toFixed(0));
     });
 
     it("should adjust the rate with respect to the new USDMNR rate", async function() {
-        const oldUsdMnrRate = await this.preIco.usdMnr();
-        const oldRate = await this.preIco.rate();
+        var oldUsdMnrRate = await this.preIco.usdMnr();
 
+        this.preIco.setUsdMnr(oldUsdMnrRate.times(2), { from: owner }).should.be.fulfilled;
+        oldUsdMnrRate = await this.preIco.usdMnr();
+        const oldRate = await this.preIco.rate();
         this.preIco.setUsdMnr(oldUsdMnrRate.times(2), { from: owner }).should.be.fulfilled;
 
         const newRate = await this.preIco.rate();
@@ -101,12 +106,13 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         await this.preIco.sendTransaction({ from: investor, value: web3.toWei("1", "ether") }).should.be.fulfilled;
 
 	const tokensOfInvestor = await this.token.balanceOf(investor);
-	const decimals = await this.token.DECIMALS();
+	const decimals = await this.token.decimals();
 
-        const decimalsInUsdMnr = 100000;
+        const decimalsInUsdMnr = await this.preIco.CENT_DECIMALS();
+        const rate = await this.preIco.rate();
 
         tokensOfInvestor.should.be.bignumber.equal(
-            new BigNumber(USDETH.times(decimalsInUsdMnr).div(USDMNR)).times(new BigNumber(10 ** decimals)).toFixed(0)
+            rate.times(new BigNumber(10 ** decimals)).toFixed(0)
         );
     });
 
@@ -121,6 +127,7 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
     it("should refund in case the crowdsale fails to collect the softcap", async function() {
         await increaseTimeTo(this.openTime);
         const investorBalance = await web3.eth.getBalance(investor);
+
         await this.preIco.sendTransaction({ from: investor, value: GOAL.div(2), gasPrice: 0 }).should.be.fulfilled;
 
         await increaseTimeTo(this.afterCloseTime);
@@ -150,7 +157,8 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
 	    .should.be.rejectedWith(EVMRevert);
     });
 
-    it("should adjust the cap of the token after the end of the pre-ico", async function() {
+    // This behaviour should be switched off after the first stage of pre-ico
+    /* it("should adjust the cap of the token after the end of the pre-ico", async function() {
         increaseTimeTo(this.openTime);
         await this.preIco.sendTransaction({ from: investor, value: GOAL });
 
@@ -160,7 +168,21 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         const currentTokenCap = await this.token.cap();
         const tokensDistributed = await this.preIco.tokensPurchased();
 
-        currentTokenCap.should.be.bignumber.equal(tokensDistributed.times(100).div(6));
+        currentTokenCap.should.be.bignumber.equal(tokensDistributed.times(100).div(6).toFixed(18));
+    });*/
+
+    it("should not change the state of the token after the end of the pre-ico", async function() {
+        increaseTimeTo(this.openTime);
+        await this.preIco.sendTransaction({ from: investor, value: GOAL });
+
+        const oldTokenCap = await this.token.cap();
+
+        await increaseTimeTo(this.afterCloseTime);
+        await this.preIco.finalize({ from: owner }).should.be.fulfilled;
+
+        const currentTokenCap = await this.token.cap();
+
+        currentTokenCap.should.be.bignumber.equal(oldTokenCap);
     });
 
     it("should return the ownership to the team's wallet after the end of crowdsale", async function() {
@@ -171,7 +193,7 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
         owner.should.be.equal(await this.token.owner());
     });
 
-    it("should allow to claim refund only once to one investor", async function() {
+    /*it("should allow to claim refund only once to one investor", async function() {
         increaseTimeTo(this.openTime);
 
         var attacker = await ReentrancyAttacker.new(this.preIco.address);
@@ -182,6 +204,6 @@ contract("MonoretoPreIco", async function([ owner, wallet, investor ]) {
 
 	increaseTimeTo(this.afterCloseTime);
 	await attacker.attack().should.be.rejectedWith(EVMRevert);
-    });
+    });*/
 });
 

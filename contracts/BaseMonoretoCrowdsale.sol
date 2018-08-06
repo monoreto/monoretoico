@@ -24,7 +24,7 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
      * @dev USDMNR must be set as actual_value * CENT_DECIMALS
      * @dev example: value 0.2$ per token must be set as 0.2 * CENT_DECIMALS
      */
-    uint256 public constant CENT_DECIMALS = 100000;
+    uint256 public constant CENT_DECIMALS = 1e18;
 
     // original contract owner, needed for transfering the ownership of token back after the end of crowdsale
     address internal deployer;
@@ -44,12 +44,12 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
 
     function setUsdEth(uint256 _usdEth) external onlyOwner {
         usdEth = _usdEth;
-        rate = _usdEth.mul(CENT_DECIMALS).div(usdMnr);
+        rate = usdEth.mul(CENT_DECIMALS).div(usdMnr);
     }
 
     function setUsdMnr(uint256 _usdMnr) external onlyOwner {
         usdMnr = _usdMnr;
-        rate = usdEth.mul(CENT_DECIMALS).div(_usdMnr);
+        rate = usdEth.mul(CENT_DECIMALS).div(usdMnr);
     }
 
     function hasClosed() public view returns (bool) {
@@ -68,7 +68,7 @@ contract BaseMonoretoCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCr
     }
 
     function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-        return _weiAmount.mul(usdEth).mul(CENT_DECIMALS).div(usdMnr);
+        return _weiAmount.mul(rate); //mul(usdEth).mul(CENT_DECIMALS).div(usdMnr);
     }
 
     function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal {
